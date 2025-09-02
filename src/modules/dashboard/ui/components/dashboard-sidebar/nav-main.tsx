@@ -5,6 +5,7 @@ import {
   IconSearch,
   type Icon,
 } from "@tabler/icons-react";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,8 +15,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-// import { useModal } from "@/hooks/use-modal";
-import Link from "next/link";
+import { useModal } from "@/hooks/use-modal";
 
 export function NavMain({
   items,
@@ -26,7 +26,7 @@ export function NavMain({
     icon?: Icon;
   }[];
 }) {
-  // const { onOpen } = useModal();
+  const { onOpen } = useModal();
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -39,7 +39,7 @@ export function NavMain({
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              // onClick={() => onOpen("createBoard")}
+              onClick={() => onOpen("createBoard")}
               tooltip="Create Board"
               className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
             >

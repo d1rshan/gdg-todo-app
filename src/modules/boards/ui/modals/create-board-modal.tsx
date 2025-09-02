@@ -62,6 +62,7 @@ export function CreateBoardModal() {
     //   removeBoard(newBoard.id)
     // }
 
+    onClose();
     setIsLoading(false);
   }
 

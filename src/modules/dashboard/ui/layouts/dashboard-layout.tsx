@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { currentUser } from "@/modules/auth/server/utils";
+import { ModalProvider } from "@/components/providers/modal-provider";
 
 import { DashboardSidebar } from "../components/dashboard-sidebar";
 import { DashboardSiteHeader } from "../components/dashboard-site-header";
@@ -26,7 +27,7 @@ export const DashboardLayout = async ({
         } as React.CSSProperties
       }
     >
-      {/* <ModalProvider /> */}
+      <ModalProvider />
       <DashboardSidebar
         variant="inset"
         user={{ email: user.email, name: user.name, avatar: user.image! }}

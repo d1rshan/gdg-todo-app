@@ -24,6 +24,7 @@ export function DeleteBoardModal() {
 
   const onClick = async () => {
     await deleteBoardAction({ boardId: boardId! });
+    onClose();
     deleteBoard(boardId!);
   };
   return (

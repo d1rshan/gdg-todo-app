@@ -1,3 +1,5 @@
+import { BoardCards } from "../sections/boards-section";
+
 export const DashboardView = () => {
-  return <div>Dashboard Page</div>;
+  return <BoardCards />;
 };
