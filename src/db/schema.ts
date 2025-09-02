@@ -76,8 +76,7 @@ export const boards = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    name: text("name").notNull(),
-    order: integer("order").notNull(),
+    title: text("title").notNull(),
     createdAt: timestamp("created_at").defaultNow(),
   },
   (t) => [index("boards_userid_idx").on(t.userId)]

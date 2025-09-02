@@ -16,6 +16,6 @@ export type Card = {
 
 export type Board = {
   id: string;
-  name: string;
+  title: string;
   lists?: List[];
 };
