@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { IconLayout } from "@tabler/icons-react";
 import { usePathname } from "next/navigation";
 
@@ -10,21 +11,24 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Board } from "@/types";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { useBoards } from "@/features/boards/hooks/useBoards";
 
-export function NavBoards() {
+export const NavBoards = () => {
   const pathname = usePathname();
 
-  const { data: boards } = useBoards();
+  // const { data: boards } = useBoards();
+
+  const boards = [
+    { id: 1, title: "board 1" },
+    { id: 2, title: "board 2" },
+    { id: 3, title: "board 3" },
+  ];
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Boards</SidebarGroupLabel>
       <SidebarMenu>
-        {boards.slice(0, 7).map((board: Board) => {
+        {boards.slice(0, 7).map((board) => {
           const isActive = pathname === `/boards/${board.id}`;
           return (
             <SidebarMenuItem key={board.id}>
@@ -50,4 +54,4 @@ export function NavBoards() {
       </SidebarMenu>
     </SidebarGroup>
   );
-}
+};

@@ -25,11 +25,10 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { authClient } from "@/lib/better-auth/auth-client";
+import { authClient } from "@/lib/auth-client";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 
-import { ModeToggle } from "../../../../../components/ui/mode-toggle";
-
-export function NavUser({
+export const NavUser = ({
   user,
 }: {
   user: {
@@ -37,7 +36,7 @@ export function NavUser({
     email: string;
     avatar?: string;
   };
-}) {
+}) => {
   const { isMobile } = useSidebar();
 
   const router = useRouter();
@@ -124,4 +123,4 @@ export function NavUser({
       </SidebarMenuItem>
     </SidebarMenu>
   );
-}
+};
