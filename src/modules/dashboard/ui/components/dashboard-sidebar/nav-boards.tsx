@@ -12,24 +12,20 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import { useStore } from "@/hooks/use-store";
+import { useSonner } from "sonner";
 
 export const NavBoards = () => {
-  const pathname = usePathname();
-
-  // const { data: boards } = useBoards();
-
-  const boards = [
-    { id: 1, title: "board 1" },
-    { id: 2, title: "board 2" },
-    { id: 3, title: "board 3" },
-  ];
+  const boards = useStore((state) => state.boards);
+  const setActiveBoardId = useStore((state) => state.setActiveBoardId);
+  const activeBoardId = useStore((state) => state.activeBoardId);
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Boards</SidebarGroupLabel>
       <SidebarMenu>
         {boards.slice(0, 7).map((board) => {
-          const isActive = pathname === `/boards/${board.id}`;
+          const isActive = activeBoardId === board.id;
           return (
             <SidebarMenuItem key={board.id}>
               <SidebarMenuButton
@@ -40,7 +36,10 @@ export const NavBoards = () => {
                 )}
               >
                 <Link href={`/boards/${board.id}`}>
-                  <div className="flex items-center justify-between w-full">
+                  <div
+                    className="flex items-center justify-between w-full"
+                    onClick={() => setActiveBoardId(board.id)}
+                  >
                     <div className="flex items-center gap-2">
                       <IconLayout />
                       <span>{board.title}</span>

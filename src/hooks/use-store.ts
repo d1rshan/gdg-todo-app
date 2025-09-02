@@ -3,6 +3,9 @@ import { create } from "zustand";
 import { List, Card, Board } from "@/types";
 
 export type StoreType = {
+  activeBoardId: string | null;
+  setActiveBoardId: (boardId: string) => void;
+
   boards: Board[];
   setBoards: (boards: Board[]) => void;
 
@@ -30,6 +33,8 @@ export type StoreType = {
 };
 
 export const useStore = create<StoreType>((set, get) => ({
+  activeBoardId: null,
+  setActiveBoardId: (boardId: string) => set({ activeBoardId: boardId }),
   boards: [],
   setBoards: (boards) => set({ boards: boards }),
   addBoard: (board: Board) =>
@@ -46,7 +51,7 @@ export const useStore = create<StoreType>((set, get) => ({
   renameBoard: (boardId: string, title: string) =>
     set((state) => ({
       boards: state.boards.map((board) =>
-        board.id === boardId ? { ...board, name: title } : board
+        board.id === boardId ? { ...board, title } : board
       ),
     })),
   updateBoard: (boardId: string, updatedBoard: Partial<Board>) =>

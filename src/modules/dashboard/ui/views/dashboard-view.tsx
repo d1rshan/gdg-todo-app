@@ -20,9 +20,11 @@ export const DashboardView = ({ data }: { data: Board[] }) => {
   const { onOpen } = useModal();
   const boards = useStore((state) => state.boards);
   const setBoards = useStore((state) => state.setBoards);
+  const setActiveBoardId = useStore((state) => state.setActiveBoardId);
 
   useEffect(() => {
     setBoards(data);
+    setActiveBoardId("");
   }, []);
 
   return (
@@ -30,7 +32,10 @@ export const DashboardView = ({ data }: { data: Board[] }) => {
       {boards?.map((board) => (
         <div key={board.id}>
           <Link href={`/boards/${board.id}`} key={board.id}>
-            <Card className="@container/card cursor-pointer group ">
+            <Card
+              className="@container/card cursor-pointer group "
+              onClick={() => setActiveBoardId(board.id)}
+            >
               <CardHeader>
                 <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                   {board.title}
