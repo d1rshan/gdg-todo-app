@@ -50,11 +50,12 @@ export const SignInForm = ({
     },
   });
 
+  // TODO: place this somewhere else
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     const res = await signIn(values);
     if (res.success) {
-      router.push("/dashboard");
+      router.push("/boards");
     } else {
       form.reset();
       toast.error(res.error);

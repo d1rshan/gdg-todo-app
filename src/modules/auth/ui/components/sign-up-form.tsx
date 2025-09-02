@@ -54,6 +54,7 @@ export const SignUpForm = ({
     },
   });
 
+  // TODO: place this somewhere else
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (values.password !== values.confirmPassword) {
       form.setError("password", { type: "manual" });
@@ -64,7 +65,7 @@ export const SignUpForm = ({
     setIsLoading(true);
     const res = await signUp(values);
     if (res.success) {
-      router.push("/dashboard");
+      router.push("/boards");
     } else {
       form.reset();
       toast.error(res.error);
