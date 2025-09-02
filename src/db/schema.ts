@@ -85,7 +85,7 @@ export const boards = pgTable(
 export const lists = pgTable(
   "lists",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
+    id: uuid("id").primaryKey(),
     title: text("title").notNull(),
     order: integer("order").notNull(),
     boardId: uuid("board_id")
@@ -99,7 +99,7 @@ export const lists = pgTable(
 export const cards = pgTable(
   "cards",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
+    id: uuid("id").primaryKey(),
     title: text("title").notNull(),
     order: integer("order").notNull(),
     listId: uuid("list_id")

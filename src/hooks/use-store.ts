@@ -2,6 +2,8 @@ import { create } from "zustand";
 
 import { List, Card, Board } from "@/types";
 
+import { createJSONStorage, persist } from "zustand/middleware";
+
 export type StoreType = {
   activeBoardId: string | null;
   setActiveBoardId: (boardId: string) => void;
@@ -153,3 +155,57 @@ export const useStore = create<StoreType>((set, get) => ({
       return state;
     }),
 }));
+
+export type StoreTypePersisted = {
+  currentBoardId: string | null;
+  setCurrentBoardId: (currentBoardId: string | null) => void;
+
+  isCollapsed: boolean;
+  setIsCollapsed: (isCollapsed: boolean) => void;
+
+  showItemsOrder: boolean;
+  toggleItemsOrder: () => void;
+
+  textAlignment: "left" | "center" | "right";
+  setTextAlignment: (textAlignment: "left" | "center" | "right") => void;
+};
+
+export const useStorePersisted = create<StoreTypePersisted>()(
+  persist(
+    (set) => ({
+      currentBoardId: null,
+      setCurrentBoardId: (currentBoardId) => set({ currentBoardId }),
+
+      isCollapsed: false,
+      setIsCollapsed: (isCollapsed) => set({ isCollapsed }),
+
+      showItemsOrder: false,
+      toggleItemsOrder: () =>
+        set((state) => ({ showItemsOrder: !state.showItemsOrder })),
+
+      textAlignment: "left",
+      setTextAlignment: (textAlignment) => set({ textAlignment }),
+    }),
+
+    {
+      name: "boardStore",
+      storage: createJSONStorage(() => storage),
+    }
+  )
+);
+
+import { StateStorage } from "zustand/middleware";
+import { get, set, del } from "idb-keyval";
+
+// Custom storage object
+export const storage: StateStorage = {
+  getItem: async (name: string): Promise<string | null> => {
+    return (await get(name)) || null;
+  },
+  setItem: async (name: string, value: string): Promise<void> => {
+    await set(name, value);
+  },
+  removeItem: async (name: string): Promise<void> => {
+    await del(name);
+  },
+};

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { IconLayout } from "@tabler/icons-react";
-import { usePathname } from "next/navigation";
 
 import {
   SidebarGroup,
@@ -13,7 +12,6 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/hooks/use-store";
-import { useSonner } from "sonner";
 
 export const NavBoards = () => {
   const boards = useStore((state) => state.boards);
