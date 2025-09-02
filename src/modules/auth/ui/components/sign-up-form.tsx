@@ -65,7 +65,7 @@ export const SignUpForm = ({
     setIsLoading(true);
     const res = await signUp(values);
     if (res.success) {
-      router.push("/boards");
+      router.push("/dashboard");
     } else {
       form.reset();
       toast.error(res.error);

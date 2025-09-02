@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import {
   IconDashboard,
   IconHelp,
@@ -8,10 +7,6 @@ import {
   IconSettings,
 } from "@tabler/icons-react";
 
-import { NavBoards } from "@/components/ui/nav-boards";
-import { NavMain } from "@/components/ui/nav-main";
-import { NavSecondary } from "@/components/ui/nav-secondary";
-import { NavUser } from "@/components/ui/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +16,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+
+import { NavMain } from "./nav-main";
+import { NavBoards } from "./nav-boards";
+import { NavSecondary } from "./nav-secondary";
+import { NavUser } from "./nav-user";
 
 const data = {
   navMain: [
@@ -44,7 +44,9 @@ const data = {
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function DashboardSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>

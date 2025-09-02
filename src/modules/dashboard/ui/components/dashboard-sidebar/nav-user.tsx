@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/better-auth/auth-client";
 
-import { ModeToggle } from "./mode-toggle";
+import { ModeToggle } from "../../../../../components/ui/mode-toggle";
 
 export function NavUser({
   user,
