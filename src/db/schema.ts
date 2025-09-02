@@ -1,4 +1,13 @@
-import { pgTable, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  uuid,
+  integer,
+  index,
+} from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -59,3 +68,63 @@ export const verifications = pgTable("verifications", {
     () => /* @__PURE__ */ new Date()
   ),
 });
+
+export const boards = pgTable(
+  "boards",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    order: integer("order").notNull(),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (t) => [index("boards_userid_idx").on(t.userId)]
+);
+
+export const lists = pgTable(
+  "lists",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: text("title").notNull(),
+    order: integer("order").notNull(),
+    boardId: uuid("board_id")
+      .notNull()
+      .references(() => boards.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (t) => [index("lists_boardid_idx").on(t.boardId)]
+);
+
+export const cards = pgTable(
+  "cards",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    title: text("title").notNull(),
+    order: integer("order").notNull(),
+    listId: uuid("list_id")
+      .notNull()
+      .references(() => lists.id, { onDelete: "cascade" }),
+    boardId: uuid("board_id")
+      .notNull()
+      .references(() => boards.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (t) => [index("cards_listid_idx").on(t.listId)]
+);
+
+export const listsRelations = relations(lists, ({ one, many }) => ({
+  board: one(boards, { fields: [lists.boardId], references: [boards.id] }),
+  cards: many(cards),
+}));
+
+export const cardsRelations = relations(cards, ({ one }) => ({
+  list: one(lists, { fields: [cards.listId], references: [lists.id] }),
+  board: one(boards, { fields: [cards.boardId], references: [boards.id] }),
+}));
+
+export const boardsRelations = relations(boards, ({ many, one }) => ({
+  lists: many(lists),
+  user: one(users, { fields: [boards.userId], references: [users.id] }),
+}));

@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  IconDashboard,
-  IconHelp,
-  IconInnerShadowTop,
-  IconSettings,
-} from "@tabler/icons-react";
+import { IconLayout, IconInnerShadowTop } from "@tabler/icons-react";
 
 import {
   Sidebar,
@@ -27,7 +22,7 @@ const data = {
     {
       title: "Dashboard",
       url: "/dashboard",
-      icon: IconDashboard,
+      icon: IconLayout,
     },
   ],
   navSecondary: [
