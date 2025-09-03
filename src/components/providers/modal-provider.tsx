@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { CreateBoardModal } from "@/modules/boards/ui/modals/create-board-modal";
 import { DeleteBoardModal } from "@/modules/boards/ui/modals/delete-board-modal";
-import { EditBoardModal } from "@/modules/boards/ui/modals/rename-board-modal";
+import { RenameBoardModal } from "@/modules/boards/ui/modals/rename-board-modal";
 
 export const ModalProvider = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -19,7 +19,7 @@ export const ModalProvider = () => {
   return (
     <>
       <CreateBoardModal />
-      <EditBoardModal />
+      <RenameBoardModal />
       <DeleteBoardModal />
     </>
   );

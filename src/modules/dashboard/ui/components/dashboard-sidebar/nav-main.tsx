@@ -31,12 +31,12 @@ export function NavMain({
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu className="gap-2">
-          <SidebarMenuItem>
+          {/* <SidebarMenuItem>
             <Button className="w-full flex justify-start" variant="outline">
               <IconSearch />
               <span>Search</span>
             </Button>
-          </SidebarMenuItem>
+          </SidebarMenuItem> */}
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={() => onOpen("createBoard")}

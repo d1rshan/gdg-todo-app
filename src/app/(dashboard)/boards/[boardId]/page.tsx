@@ -1,5 +1,6 @@
 import { db } from "@/db";
-import KanbanBoard, { List } from "@/modules/boards/ui/views/board-view";
+import KanbanBoard from "@/modules/boards/ui/views/kanban-board-view";
+import { List } from "@/types";
 import { notFound } from "next/navigation";
 
 async function getBoardData(boardId: string): Promise<List[] | null> {
@@ -32,8 +33,7 @@ export default async function BoardPage({
   }
 
   return (
-    <main className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Your Board</h1>
+    <main className="px-4">
       <KanbanBoard initialData={initialData} boardId={p.boardId} />
     </main>
   );

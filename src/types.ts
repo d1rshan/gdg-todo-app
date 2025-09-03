@@ -1,21 +1,24 @@
-export type List = {
+export type Board = {
   id: string;
   title: string;
-  cards: Card[];
-  order: number;
-  boardId: string;
 };
 
 export type Card = {
   id: string;
   title: string;
-  listId: string;
   order: number;
-  boardId: string;
+  listId: string;
 };
 
-export type Board = {
+export type List = {
   id: string;
   title: string;
-  lists?: List[];
+  order: number;
+  cards: Card[];
+};
+
+export type BoardData = {
+  lists: Record<string, { id: string; title: string; cardIds: string[] }>;
+  cards: Record<string, { id: string; title: string }>;
+  listOrder: string[];
 };

@@ -15,7 +15,7 @@ const Page = async () => {
 
   const data = await db.select().from(boards).where(eq(boards.userId, user.id));
 
-  return <DashboardView boards={data} />;
+  return <DashboardView />;
 };
 
 export default Page;

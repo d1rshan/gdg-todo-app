@@ -11,42 +11,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useStore } from "@/hooks/use-store";
 import { useModal } from "@/hooks/use-modal";
-import { Board } from "@/types";
-import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useBoards } from "@/modules/boards/hooks/useBoards";
 
-export const DashboardView = ({ boards: data }: { boards: Board[] }) => {
+export const DashboardView = () => {
   const { onOpen } = useModal();
-  const boards = useStore((state) => state.boards);
-  const setBoards = useStore((state) => state.setBoards);
-  const setActiveBoardId = useStore((state) => state.setActiveBoardId);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    setBoards(data);
-    setActiveBoardId("");
-    setIsLoading(false);
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="bg-background fixed top-0 left-0 z-50 min-h-screen min-w-screen flex items-center justify-center">
-        <Loader2 className="animate-spin size-14" />
-      </div>
-    );
-  }
+  const { data: boards = [] } = useBoards();
 
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       {boards?.map((board) => (
         <div key={board.id}>
           <Link href={`/boards/${board.id}`} key={board.id}>
-            <Card
-              className="@container/card cursor-pointer group "
-              onClick={() => setActiveBoardId(board.id)}
-            >
+            <Card className="@container/card cursor-pointer group ">
               <CardHeader>
                 <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                   {board.title}

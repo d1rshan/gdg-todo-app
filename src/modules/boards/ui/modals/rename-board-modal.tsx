@@ -23,23 +23,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useEffect, useState } from "react";
-import { renameBoardAction } from "../../server/actions";
-import { useStore } from "@/hooks/use-store";
+import { useEffect } from "react";
+
+import { useRenameBoard } from "../../hooks/useRenameBoard";
 
 const formSchema = z.object({
   title: z.string().min(1, { error: "Board Title is Required" }).max(30),
 });
 
-export function EditBoardModal() {
+export function RenameBoardModal() {
   const { isOpen, onClose, type, data } = useModal();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const isModalOpen = isOpen && type === "editBoard";
 
   const { boardId, boardTitle } = data;
-
-  const renameBoard = useStore((state) => state.renameBoard);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,16 +50,15 @@ export function EditBoardModal() {
     form.setValue("title", boardTitle);
   }, [boardTitle]);
 
+  const { mutateAsync: editBoard, isPending } = useRenameBoard();
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
     const { title } = values;
     if (!boardId) {
       return;
     }
-    await renameBoardAction({ boardId, title });
-    renameBoard(boardId, title);
+    await editBoard({ boardId, title });
     form.reset();
-    setIsLoading(false);
     onClose();
   }
 
@@ -93,7 +89,7 @@ export function EditBoardModal() {
                   Cancel
                 </Button>
               </DialogClose>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isPending}>
                 Save
               </Button>
             </DialogFooter>

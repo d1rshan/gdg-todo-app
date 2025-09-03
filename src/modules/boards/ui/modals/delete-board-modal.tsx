@@ -10,23 +10,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useModal } from "@/hooks/use-modal";
 
-import { deleteBoardAction } from "../../server/actions";
-
-import { useStore } from "@/hooks/use-store";
+import { useDeleteBoard } from "../../hooks/useDeleteBoard";
 
 export function DeleteBoardModal() {
   const { isOpen, onClose, data, type } = useModal();
-  const deleteBoard = useStore((state) => state.deleteBoard);
 
   const isModalOpen = isOpen && type === "deleteBoard";
 
-  const { boardTitle, boardId } = data;
+  const { mutate: deleteBoard } = useDeleteBoard();
 
-  const onClick = async () => {
-    await deleteBoardAction({ boardId: boardId! });
-    onClose();
-    deleteBoard(boardId!);
-  };
+  const { boardTitle, boardId } = data;
   return (
     <AlertDialog open={isModalOpen} onOpenChange={onClose}>
       <AlertDialogContent>
@@ -39,7 +32,9 @@ export function DeleteBoardModal() {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onClick}>Continue</AlertDialogAction>
+          <AlertDialogAction onClick={() => deleteBoard({ boardId: boardId! })}>
+            Continue
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -1,6 +1,6 @@
-// /components/kanban-board.tsx
 "use client";
 
+import { Plus, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   DragDropContext,
@@ -8,16 +8,18 @@ import {
   Droppable,
   type DropResult,
 } from "@hello-pangea/dnd";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, X, GripVertical, MoreHorizontal } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner"; // Recommended for user feedback
-
+import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 
-// --- SERVER ACTION IMPORTS ---
+import { BoardData, List } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
+import { SyncIndicator } from "../components/sync-indicator";
+import { ListHeader } from "../components/list-header";
+import { ListCards } from "../components/list-cards";
+import { getDraggableStyle } from "../utils";
 import {
   createCard,
   createList,
@@ -25,54 +27,8 @@ import {
   renameCard,
   renameList,
   reorderLists,
-} from "@/actions";
-import { SyncIndicator } from "./sync-indicator";
+} from "../../server/actions";
 
-// --- HELPERS ---
-
-// dnd style helper
-function getDraggableStyle(
-  style: any,
-  snapshot: { isDragging: boolean; isDropAnimating: boolean }
-) {
-  if (!style) return style;
-  if (snapshot.isDropAnimating) {
-    // Snap in place instantly on drop
-    return { ...style, transitionDuration: "0.001s" };
-  }
-  if (snapshot.isDragging) {
-    return { ...style, willChange: "transform" };
-  }
-  return style;
-}
-
-// --- DATA TYPES ---
-
-// These types reflect the data structure fetched from the server
-export type Card = {
-  id: string;
-  title: string;
-  order: number;
-  listId: string;
-};
-
-export type List = {
-  id: string;
-  title: string;
-  order: number;
-  cards: Card[];
-};
-
-// This is the normalized shape the component will manage internally for easier state updates
-type BoardData = {
-  lists: Record<string, { id: string; title: string; cardIds: string[] }>;
-  cards: Record<string, { id: string; title: string }>;
-  listOrder: string[];
-};
-
-// --- DATA TRANSFORMATION ---
-
-// Helper to transform the initial server data into the normalized shape our component uses
 const transformInitialData = (initialLists: List[]): BoardData => {
   const lists: BoardData["lists"] = {};
   const cards: BoardData["cards"] = {};
@@ -80,7 +36,6 @@ const transformInitialData = (initialLists: List[]): BoardData => {
 
   initialLists.forEach((list) => {
     lists[list.id] = { id: list.id, title: list.title, cardIds: [] };
-    // Ensure cards are sorted by their `order` property before mapping
     list.cards
       .sort((a, b) => a.order - b.order)
       .forEach((card) => {
@@ -92,8 +47,7 @@ const transformInitialData = (initialLists: List[]): BoardData => {
   return { lists, cards, listOrder };
 };
 
-// --- MAIN COMPONENT ---
-export default function KanbanBoard({
+export default function KanbanBoardView({
   initialData: initialLists,
   boardId,
 }: {
@@ -104,7 +58,6 @@ export default function KanbanBoard({
     transformInitialData(initialLists)
   );
 
-  // Sync state if the initial server-fetched data prop changes
   useEffect(() => {
     setData(transformInitialData(initialLists));
   }, [initialLists]);
@@ -113,21 +66,17 @@ export default function KanbanBoard({
   const [newListTitle, setNewListTitle] = useState("");
   const listInputRef = useRef<HTMLInputElement | null>(null);
 
-  // 2. Add state to track pending database operations
   const [pendingActions, setPendingActions] = useState(0);
-  // const isPending = pendingActions > 0;
 
   const lists = useMemo(
     () => data.listOrder.map((id) => data.lists[id]),
     [data]
   );
 
-  // --- SERVER ACTION HANDLERS ---
   const handleAddList = async (title: string) => {
     if (!title.trim()) return;
     const newId = uuidv4();
 
-    // Optimistic update
     setData((prev) => ({
       ...prev,
       lists: {
@@ -150,7 +99,6 @@ export default function KanbanBoard({
       const result = await createList(formData);
       if (result?.error) {
         toast.error(result.error);
-        // Revert state on a known error from the server
         setData((prev) => {
           const { [newId]: _, ...newLists } = prev.lists;
           return {
@@ -161,12 +109,17 @@ export default function KanbanBoard({
         });
       }
     } catch (error) {
-      // Catch unexpected errors (e.g., network failure)
       console.error("Failed to execute createList:", error);
       toast.error("An unexpected error occurred.");
-      // You might want to revert state here as well
+      setData((prev) => {
+        const { [newId]: _, ...newLists } = prev.lists;
+        return {
+          ...prev,
+          lists: newLists,
+          listOrder: prev.listOrder.filter((id) => id !== newId),
+        };
+      });
     } finally {
-      // This is guaranteed to run, ensuring the counter is decremented
       setPendingActions((prev) => prev - 1);
     }
   };
@@ -175,7 +128,6 @@ export default function KanbanBoard({
     if (!title.trim()) return;
     const newId = uuidv4();
 
-    // Optimistic update
     setData((prev) => ({
       ...prev,
       cards: { ...prev.cards, [newId]: { id: newId, title: title.trim() } },
@@ -199,7 +151,6 @@ export default function KanbanBoard({
       const result = await createCard(formData);
       if (result?.error) {
         toast.error(result.error);
-        // Revert state
         setData((prev) => {
           const { [newId]: _, ...newCards } = prev.cards;
           return {
@@ -220,6 +171,20 @@ export default function KanbanBoard({
     } catch (error) {
       console.error("Failed to execute createCard:", error);
       toast.error("An unexpected error occurred.");
+      setData((prev) => {
+        const { [newId]: _, ...newCards } = prev.cards;
+        return {
+          ...prev,
+          cards: newCards,
+          lists: {
+            ...prev.lists,
+            [listId]: {
+              ...prev.lists[listId],
+              cardIds: prev.lists[listId].cardIds.filter((id) => id !== newId),
+            },
+          },
+        };
+      });
     } finally {
       setPendingActions((prev) => prev - 1);
     }
@@ -229,7 +194,6 @@ export default function KanbanBoard({
     const oldTitle = data.lists[listId].title;
     if (oldTitle === newTitle.trim() || !newTitle.trim()) return;
 
-    // Optimistic update
     setData((prev) => ({
       ...prev,
       lists: {
@@ -248,7 +212,6 @@ export default function KanbanBoard({
       const result = await renameList(formData);
       if (result?.error) {
         toast.error(result.error);
-        // Revert on error
         setData((prev) => ({
           ...prev,
           lists: {
@@ -260,6 +223,13 @@ export default function KanbanBoard({
     } catch (error) {
       console.error("Failed to execute renameList:", error);
       toast.error("An unexpected error occurred.");
+      setData((prev) => ({
+        ...prev,
+        lists: {
+          ...prev.lists,
+          [listId]: { ...prev.lists[listId], title: oldTitle },
+        },
+      }));
     } finally {
       setPendingActions((prev) => prev - 1);
     }
@@ -269,7 +239,6 @@ export default function KanbanBoard({
     const oldTitle = data.cards[cardId].title;
     if (oldTitle === newTitle.trim() || !newTitle.trim()) return;
 
-    // Optimistic update
     setData((prev) => ({
       ...prev,
       cards: {
@@ -299,6 +268,13 @@ export default function KanbanBoard({
     } catch (error) {
       console.error("Failed to execute renameCard:", error);
       toast.error("An unexpected error occurred.");
+      setData((prev) => ({
+        ...prev,
+        cards: {
+          ...prev.cards,
+          [cardId]: { ...prev.cards[cardId], title: oldTitle },
+        },
+      }));
     } finally {
       setPendingActions((prev) => prev - 1);
     }
@@ -317,7 +293,6 @@ export default function KanbanBoard({
       const oldData = structuredClone(data);
       let actionPromise: Promise<any>;
 
-      // Perform optimistic update and prepare the server action
       if (result.type === "COLUMN") {
         const newOrder = Array.from(data.listOrder);
         newOrder.splice(result.source.index, 1);
@@ -329,7 +304,6 @@ export default function KanbanBoard({
         formData.append("orderedIds", newOrder.join(","));
         actionPromise = reorderLists(formData);
       } else {
-        // Card drag logic...
         const startList = data.lists[result.source.droppableId];
         const finishList = data.lists[result.destination.droppableId];
         const formData = new FormData();
@@ -369,31 +343,28 @@ export default function KanbanBoard({
         actionPromise = reorderCard(formData);
       }
 
-      // Increment counter and handle promise with .finally()
       setPendingActions((prev) => prev + 1);
       actionPromise
         .then((res) => {
           if (res?.error) {
             toast.error(res.error);
-            setData(oldData); // Revert on known error
+            setData(oldData);
           }
         })
         .catch((error) => {
           console.error("DragEnd action failed:", error);
           toast.error("An unexpected error occurred during reorder.");
-          setData(oldData); // Revert on unexpected error
+          setData(oldData);
         })
         .finally(() => {
-          // This is guaranteed to run for promises
           setPendingActions((prev) => prev - 1);
         });
     },
     [data, boardId]
   );
-  // --- RENDER ---
   return (
     <div className="flex flex-col w-full">
-      <div className="flex items-center justify-end h-6 mb-4">
+      <div className="flex items-center justify-start h-6 mb-4">
         <SyncIndicator isPending={pendingActions > 0} />
       </div>
 
@@ -509,281 +480,5 @@ export default function KanbanBoard({
         }
       `}</style>
     </div>
-  );
-}
-
-// --- CHILD COMPONENTS ---
-
-function ListHeader({
-  title = "List",
-  onRename = () => {},
-  dragHandleProps,
-}: {
-  title?: string;
-  onRename?: (title: string) => void;
-  dragHandleProps?: any;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [val, setVal] = useState(title);
-
-  useEffect(() => setVal(title), [title]);
-
-  const handleSave = () => {
-    if (val.trim()) onRename(val.trim());
-    setEditing(false);
-  };
-
-  return (
-    <div className="mb-2 flex items-center gap-2">
-      <div className="flex flex-1 items-center gap-2">
-        <button
-          className="cursor-grab text-zinc-400 hover:text-zinc-500"
-          aria-label="Drag list"
-          {...dragHandleProps}
-        >
-          <GripVertical className="h-4 w-4" />
-        </button>
-        {editing ? (
-          <Input
-            value={val}
-            autoFocus
-            onChange={(e) => setVal(e.target.value)}
-            onBlur={handleSave}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSave();
-              else if (e.key === "Escape") {
-                setVal(title);
-                setEditing(false);
-              }
-            }}
-            className="h-7 w-full border border-zinc-300 bg-white px-1 py-0 text-sm leading-none focus-visible:ring-0 focus-visible:ring-offset-0 dark:border-zinc-700 dark:bg-zinc-900"
-            aria-label="List title"
-          />
-        ) : (
-          <button
-            onClick={() => setEditing(true)}
-            className="line-clamp-1 cursor-text rounded px-1 text-sm font-medium text-zinc-800 hover:bg-white/60 dark:text-zinc-100 dark:hover:bg-white/5"
-            title="Click to rename"
-          >
-            {title}
-          </button>
-        )}
-      </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-7 text-zinc-500"
-        aria-label="List menu"
-      >
-        <MoreHorizontal className="h-4 w-4" />
-      </Button>
-    </div>
-  );
-}
-
-function ListCards({
-  listId = "list-0",
-  cards = [],
-  onAddCard = () => {},
-  onRenameCard = () => {},
-}: {
-  listId?: string;
-  cards?: { id: string; title: string }[];
-  onAddCard?: (title: string) => void;
-  onRenameCard?: (cardId: string, title: string) => void;
-}) {
-  const [adding, setAdding] = useState(false);
-  const [text, setText] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingText, setEditingText] = useState("");
-
-  function startEdit(card: { id: string; title: string }) {
-    setEditingId(card.id);
-    setEditingText(card.title);
-    setAdding(false);
-  }
-  function cancelEdit() {
-    setEditingId(null);
-    setEditingText("");
-  }
-  function saveEdit() {
-    if (editingId && editingText.trim()) {
-      onRenameCard(editingId, editingText.trim());
-    }
-    cancelEdit();
-  }
-
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  function scrollToBottom() {
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
-    });
-  }
-
-  useEffect(() => {
-    if (adding) {
-      requestAnimationFrame(scrollToBottom);
-    }
-  }, [adding]);
-  useEffect(() => {
-    if (adding) {
-      requestAnimationFrame(scrollToBottom);
-    }
-  }, [cards.length, adding]);
-
-  function handleConfirmAdd() {
-    if (text.trim()) {
-      onAddCard(text);
-      setText("");
-      requestAnimationFrame(scrollToBottom);
-    }
-  }
-
-  return (
-    <Droppable droppableId={listId} type="CARD">
-      {(provided, snapshot) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.droppableProps}
-          className="flex min-h-0 flex-1 flex-col pr-1"
-        >
-          <div
-            ref={scrollRef}
-            className="no-scrollbar min-h-0 flex-1 overflow-y-auto"
-          >
-            <div
-              className={cn(
-                "flex flex-col gap-2",
-                snapshot.isDraggingOver &&
-                  "rounded-md bg-black/5 p-1 dark:bg-white/10"
-              )}
-            >
-              {cards.map((card, index) => (
-                <Draggable draggableId={card.id} index={index} key={card.id}>
-                  {(dragProvided, dragSnapshot) => {
-                    const isEditing = editingId === card.id;
-                    return (
-                      <div
-                        ref={dragProvided.innerRef}
-                        {...dragProvided.draggableProps}
-                        {...dragProvided.dragHandleProps}
-                        style={getDraggableStyle(
-                          dragProvided.draggableProps.style,
-                          dragSnapshot
-                        )}
-                        className={cn(
-                          "rounded-md border border-zinc-200 bg-white text-sm text-zinc-800 shadow-sm transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-900/80",
-                          dragSnapshot.isDragging &&
-                            "border-black/40 dark:border-white/50"
-                        )}
-                        onDoubleClick={() => startEdit(card)}
-                      >
-                        {isEditing ? (
-                          <div className="p-2">
-                            <Textarea
-                              value={editingText}
-                              autoFocus
-                              onChange={(e) => setEditingText(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" && !e.shiftKey) {
-                                  e.preventDefault();
-                                  if (editingText.trim()) saveEdit();
-                                } else if (e.key === "Escape") {
-                                  cancelEdit();
-                                }
-                              }}
-                              placeholder="Edit card title..."
-                              className="mb-2 min-h-[64px] resize-none bg-white dark:bg-zinc-900"
-                            />
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                onClick={saveEdit}
-                                className="bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
-                              >
-                                Save
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                aria-label="Discard edit"
-                                onClick={cancelEdit}
-                              >
-                                <X className="h-5 w-5" />
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="min-h-[36px] whitespace-pre-wrap p-2">
-                            {card.title}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  }}
-                </Draggable>
-              ))}
-              {snapshot.isDraggingOver && provided.placeholder}
-              {adding && (
-                <div className="rounded-md bg-white p-2 ring-1 ring-zinc-200 dark:bg-zinc-900 dark:ring-zinc-800">
-                  <Textarea
-                    value={text}
-                    autoFocus
-                    onChange={(e) => setText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleConfirmAdd();
-                      } else if (e.key === "Escape") {
-                        setAdding(false);
-                        setText("");
-                      }
-                    }}
-                    placeholder="Enter a title for this card..."
-                    className="mb-2 min-h-[64px] resize-none bg-white dark:bg-zinc-900"
-                  />
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      onClick={handleConfirmAdd}
-                      className="bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90"
-                    >
-                      Add card
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Cancel add card"
-                      onClick={() => {
-                        setAdding(false);
-                        setText("");
-                      }}
-                    >
-                      <X className="h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-2">
-            {!adding && (
-              <button
-                onClick={() => {
-                  setEditingId(null);
-                  setAdding(true);
-                }}
-                className="flex w-full items-center gap-2 rounded-md p-2 text-left text-sm text-zinc-600 transition hover:bg-zinc-200/60 dark:text-zinc-300 dark:hover:bg-zinc-800/60"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Add a card</span>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-    </Droppable>
   );
 }

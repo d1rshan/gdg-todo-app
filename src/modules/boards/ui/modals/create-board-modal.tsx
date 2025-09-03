@@ -24,9 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import { createBoardAction } from "../../server/actions";
-import { useState } from "react";
-import { useStore } from "@/hooks/use-store";
+import { useCreateBoard } from "../../hooks/useCreateBoard";
 
 const formSchema = z.object({
   title: z.string().min(1, { error: "Board Title is Required" }).max(30),
@@ -34,10 +32,6 @@ const formSchema = z.object({
 
 export function CreateBoardModal() {
   const { isOpen, type, onClose } = useModal();
-
-  const addBoard = useStore((state) => state.addBoard);
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const isModalOpen = isOpen && type === "createBoard";
 
@@ -48,22 +42,11 @@ export function CreateBoardModal() {
     },
   });
 
+  const { mutateAsync: createBoard, isPending } = useCreateBoard();
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
     form.reset();
-    const res = await createBoardAction({ title: values.title });
-    const board = res.data!;
-
-    if (!res?.error) {
-      addBoard({ title: board.title, id: board.id });
-    }
-
-    // if (res?.error){  // for fallbacks, when using optimistic updates
-    //   removeBoard(newBoard.id)
-    // }
-
-    onClose();
-    setIsLoading(false);
+    await createBoard({ title: values.title });
   }
 
   return (
@@ -93,7 +76,7 @@ export function CreateBoardModal() {
                   Cancel
                 </Button>
               </DialogClose>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isPending}>
                 Create
               </Button>
             </DialogFooter>
