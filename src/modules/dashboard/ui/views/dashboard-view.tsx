@@ -38,7 +38,7 @@ export const DashboardView = () => {
                         e.stopPropagation();
                       }}
                     >
-                      <div className="rounded-md p-1.5 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-accent">
+                      <div className="rounded-md p-1.5 transition-opacity hover:bg-accent">
                         <IconDotsVertical />
                         <span className="sr-only">More</span>
                       </div>
