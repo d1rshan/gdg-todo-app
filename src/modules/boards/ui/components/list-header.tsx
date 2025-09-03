@@ -3,6 +3,7 @@ import { GripVertical, MoreHorizontal } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
 
 export function ListHeader({
   title = "List",
@@ -11,7 +12,7 @@ export function ListHeader({
 }: {
   title?: string;
   onRename?: (title: string) => void;
-  dragHandleProps?: any;
+  dragHandleProps?: DraggableProvidedDragHandleProps;
 }) {
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(title);

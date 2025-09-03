@@ -1,6 +1,6 @@
 "use client";
 
-import { IconLayout, IconInnerShadowTop } from "@tabler/icons-react";
+import { IconLayout } from "@tabler/icons-react";
 
 import {
   Sidebar,

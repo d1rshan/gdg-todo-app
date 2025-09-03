@@ -128,6 +128,7 @@ export async function createList(formData: FormData) {
     revalidatePath(`/board/${boardId}`);
     return { data: newList };
   } catch (error) {
+    console.log("[createlist]", error);
     return { error: "Failed to create list." };
   }
 }
@@ -145,6 +146,7 @@ export async function renameList(formData: FormData) {
     revalidatePath(`/board/${boardId}`);
     return { success: true };
   } catch (error) {
+    console.log(error);
     return { error: "Failed to rename list." };
   }
 }
@@ -209,6 +211,8 @@ export async function createCard(formData: FormData) {
     revalidatePath(`/board/${boardId}`);
     return { data: newCard };
   } catch (error) {
+    console.log(error);
+
     return { error: "Failed to create card." };
   }
 }
@@ -226,6 +230,7 @@ export async function renameCard(formData: FormData) {
     revalidatePath(`/board/${boardId}`);
     return { success: true };
   } catch (error) {
+    console.log(error);
     return { error: "Failed to rename card." };
   }
 }

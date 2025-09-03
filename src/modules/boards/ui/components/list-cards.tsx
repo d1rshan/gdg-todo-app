@@ -96,7 +96,7 @@ export function ListCards({
                         {...dragProvided.draggableProps}
                         {...dragProvided.dragHandleProps}
                         style={getDraggableStyle(
-                          dragProvided.draggableProps.style,
+                          dragProvided.draggableProps.style!,
                           dragSnapshot
                         )}
                         className={cn(

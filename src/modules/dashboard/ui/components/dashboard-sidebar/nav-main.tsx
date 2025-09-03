@@ -1,13 +1,8 @@
 "use client";
 
-import {
-  IconCirclePlusFilled,
-  IconSearch,
-  type Icon,
-} from "@tabler/icons-react";
+import { IconCirclePlusFilled, type Icon } from "@tabler/icons-react";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
 import {
   SidebarGroup,
   SidebarGroupContent,

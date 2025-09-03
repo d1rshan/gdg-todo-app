@@ -48,7 +48,7 @@ export function RenameBoardModal() {
   useEffect(() => {
     if (!boardTitle) return;
     form.setValue("title", boardTitle);
-  }, [boardTitle]);
+  }, [boardTitle, form]);
 
   const { mutateAsync: editBoard, isPending } = useRenameBoard();
 

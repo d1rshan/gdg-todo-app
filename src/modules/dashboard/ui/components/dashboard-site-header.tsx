@@ -4,7 +4,6 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useBoards } from "@/modules/boards/hooks/useBoards";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
 export const DashboardSiteHeader = () => {
   const pathname = usePathname();

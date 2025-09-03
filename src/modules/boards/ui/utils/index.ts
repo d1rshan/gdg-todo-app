@@ -1,5 +1,7 @@
+import { DraggableStyle } from "@hello-pangea/dnd";
+
 export function getDraggableStyle(
-  style: any,
+  style: DraggableStyle,
   snapshot: { isDragging: boolean; isDropAnimating: boolean }
 ) {
   if (!style) return style;
